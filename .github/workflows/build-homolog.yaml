@@ -66,17 +66,13 @@ jobs:
           echo "DEBUG: Entrando no loop"
           while read -r branch; do
             set +e
-            echo "DEBUG: Verifica se $branch existe"
-            git ls-remote --exit-code --heads origin $branch &> /dev/null
-            branch_exists=$?
-            echo "DEBUG: Verificou se $branch $branch_exists"
-            branch_merged=0
-            if [ $branch_exists -eq 0 ]; then
-              git checkout $branch
-              git log --pretty=format:"%h" develop | grep `git log --pretty=format:"%h" -1 $branch` &> /dev/null
-              branch_merged=$?
-            fi
-            if [ $branch_exists -eq 0 ] && [ $branch_merged -ne 0 ]; then
+            git log --pretty=format:"%h" develop | grep `git log --pretty=format:"%h" -1 $branch` &> /dev/null
+            if [ $? -eq 0 ]; then
+              set -e
+              lista_branches="${lista_branches//$branch/}"
+              echo "Branch $branch removida de homolog"
+            else
+              echo "Branch $branch mantida em homolog"
               set -e
               git rebase develop
               git checkout homolog
