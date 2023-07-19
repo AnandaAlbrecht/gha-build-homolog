@@ -71,9 +71,10 @@ jobs:
             git log --pretty=format:"%h" develop | grep `git log --pretty=format:"%h" -1 $branch` &> /dev/null
             if [ $? -eq 0 ]; then
               set -e
-              nova_lista="${nova_lista//$branch/}"
+              nova_lista_2="${nova_lista//$branch/}"
               echo "Branch $branch removida de homolog"
-              echo "Lista atualiza: $nova_lista"
+              echo "Lista atualizada: $nova_lista"
+              echo "Lista atualizada 2: $nova_lista_2"
             else
               echo "Branch $branch mantida em homolog"
               set -e
@@ -85,6 +86,8 @@ jobs:
               # remove branch from list
               nova_lista="${nova_lista//$branch/}"
             fi
+          echo "TESTE Lista atualizada: $nova_lista"
+          echo "TESTE Lista atualizada 2: $nova_lista_2"
           done <<< "$lista_branches"
           echo "Preparando homolog"
           git checkout homolog
