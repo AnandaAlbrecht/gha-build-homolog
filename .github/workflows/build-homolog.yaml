@@ -86,9 +86,9 @@ jobs:
               # remove branch from list
               nova_lista="${nova_lista//$branch/}"
             fi
+          done <<< "$lista_branches"
           echo "TESTE Lista atualizada: $nova_lista"
           echo "TESTE Lista atualizada 2: $nova_lista_2"
-          done <<< "$lista_branches"
           echo "Preparando homolog"
           git checkout homolog
           echo $nova_lista | tr ' ' '\n' > homolog-branches
