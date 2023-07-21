@@ -149,6 +149,15 @@ jobs:
     needs: [ merge-branch ]
     runs-on: ubuntu-latest
     steps:
+      - uses: FranzDiebold/github-env-vars-action@v2
+      - name: Print environment variables
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.action_repository }}
+        run: |
+          echo "CI_RUN_ID=$CI_RUN_ID"
+          gh run view --job merge-branch --log | grep error
+          gh run view ${{ github.run_id }} --log | grep error
       - name: Close issue with failure
         uses: peter-evans/close-issue@v2
         with:
@@ -157,3 +166,4 @@ jobs:
             ## Error :sob:
             Automation failed.
             You can view the error accessing the [action log](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+            
