@@ -26,4 +26,3 @@ jobs:
           git checkout homolog
           git rebase develop
           git push --force origin homolog
-
