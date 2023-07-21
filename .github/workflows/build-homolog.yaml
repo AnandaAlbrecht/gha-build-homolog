@@ -48,6 +48,9 @@ jobs:
           fetch-depth: 0
 
       - name: Atualizar branch homolog
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.action_repository }}
         run: |
           git config --global user.email "robot@github.com"
           git config --global user.name "Homolog Robot"
@@ -61,6 +64,9 @@ jobs:
           git checkout develop
           git branch -D homolog
           git checkout -b homolog develop
+          job_id_teste=$(gh api repos/${{ github.repository }}/actions/runs/${{ github.run_id}}/attempts/${{ github.run_attempt }}/jobs | jq -r '.jobs | .[0].id')
+          echo "$job_id_teste"
+          echo "gh run view --job $job_id_teste --log | grep error"
           nova_lista=$lista_branches
           echo "DEBUG: Entrando no loop"
           while read -r branch; do
@@ -158,7 +164,8 @@ jobs:
           echo "CI_RUN_ID=$CI_RUN_ID"
           job_id_teste=$(gh api repos/${{ github.repository }}/actions/runs/${{ github.run_id}}/attempts/${{ github.run_attempt }}/jobs | jq -r '.jobs | .[0].id')
           echo "$job_id_teste"
-          gh run view --job $job_id_teste --log | grep error
+          echo "gh run view --job $job_id_teste --log | grep error"
+          gh run view --job merge-branch --log | grep error
       - name: Close issue with failure
         uses: peter-evans/close-issue@v2
         with:
@@ -166,5 +173,4 @@ jobs:
           comment: |
             ## Error :sob:
             Automation failed.
-            You can view the error accessing the [action log](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
-            
+            You can view the error accessing the [action log](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).           
