@@ -8,7 +8,15 @@ jobs:
       runs-on: ubuntu-latest
       if: ${{ github.event.workflow_run.conclusion == 'success' }}
       steps:
-        - run: echo 'The triggering workflow passed'
+        - name: Get issue id
+          env:
+            GH_TOKEN: ${{ github.token }}
+            GH_REPO: ${{ github.repository }}
+          run: | 
+            echo 'The triggering workflow passed'
+            issue_id=$(gh run view ${{ github.event.workflow_run.id }} --log | grep issue | xargs -r0 grep -x -E '[[:digit:]]+')
+            echo "$issue_id"
+            # gh api repos/${{ github.repository }}/actions/runs/${{ github.issue.number }} -X DELETE >/dev/null
     on-failure:
       runs-on: ubuntu-latest
       if: ${{ github.event.workflow_run.conclusion == 'failure' }}
@@ -16,17 +24,18 @@ jobs:
         - name: Print logs
           env:
             GH_TOKEN: ${{ github.token }}
-            GH_REPO: ${{ github.action_repository }}
+            GH_REPO: ${{ github.repository }}
           run: |            
-            # echo "gh run view --job=$job_id_teste --log | grep error"
+            echo "gh run view ${{ github.event.workflow_run.id }} --log | grep error"
+            gh issue comment 12 --body "Hi from GitHub CLI"
             # echo "gh api \
             # -H "Accept: application/vnd.github+json" \
             # -H "X-GitHub-Api-Version: 2022-11-28" \
-            # /repos/${{ github.repository }}/actions/jobs/${{ needs.merge-branch.outputs.job_id }}/logs"
+            # /repos/${{ github.repository }}/actions/jobs/${{ github.event.workflow_run.id }}/logs"
             # gh api \
             # -H "Accept: application/vnd.github+json" \
             # -H "X-GitHub-Api-Version: 2022-11-28" \
-            # /repos/${{ github.repository }}/actions/jobs/${{ needs.merge-branch.outputs.job_id }}/logs
+            # /repos/${{ github.repository }}/actions/jobs/${{ github.event.workflow_run.id }}/logs
 
     dump_contexts_to_log:
       runs-on: ubuntu-latest
