@@ -38,5 +38,5 @@ jobs:
         
         - name: Dump job context
           env:
-            JOB_CONTEXT: ${{ github.event.repository.id }}
+            JOB_CONTEXT: ${{ github.event.workflow_run.id }}
           run: echo "$JOB_CONTEXT"
