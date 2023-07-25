@@ -13,10 +13,9 @@ jobs:
             GH_TOKEN: ${{ github.token }}
             GH_REPO: ${{ github.repository }}
           run: | 
-            echo 'The triggering workflow passed'
-            issue_id=$(gh run view ${{ github.event.workflow_run.id }} --log | grep issue | xargs -r0 grep -x -E '[[:digit:]]+')
-            echo "$issue_id"
-            # gh api repos/${{ github.repository }}/actions/runs/${{ github.issue.number }} -X DELETE >/dev/null
+            url=$(gh api repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }} -X DELETE)
+            echo $url
+
     on-failure:
       runs-on: ubuntu-latest
       if: ${{ github.event.workflow_run.conclusion == 'failure' }}
@@ -25,27 +24,9 @@ jobs:
           env:
             GH_TOKEN: ${{ github.token }}
             GH_REPO: ${{ github.repository }}
-          run: |            
-            echo "gh run view ${{ github.event.workflow_run.id }} --log | grep error"
-            gh issue comment 12 --body "Hi from GitHub CLI"
-            # echo "gh api \
-            # -H "Accept: application/vnd.github+json" \
-            # -H "X-GitHub-Api-Version: 2022-11-28" \
-            # /repos/${{ github.repository }}/actions/jobs/${{ github.event.workflow_run.id }}/logs"
-            # gh api \
-            # -H "Accept: application/vnd.github+json" \
-            # -H "X-GitHub-Api-Version: 2022-11-28" \
-            # /repos/${{ github.repository }}/actions/jobs/${{ github.event.workflow_run.id }}/logs
-
-    dump_contexts_to_log:
-      runs-on: ubuntu-latest
-      steps:
-        - name: Dump GitHub context
-          env:
-            GITHUB_CONTEXT: ${{ toJson(github) }}
-          run: echo "$GITHUB_CONTEXT"
-        
-        - name: Dump job context
-          env:
-            JOB_CONTEXT: ${{ github.event.workflow_run.id }}
-          run: echo "$JOB_CONTEXT"
+          run: |
+            log_comment=$(gh run view ${{ github.event.workflow_run.id }} --log | grep error)            
+            echo "$log_comment"
+            issue_number=$(gh run view ${{ github.event.workflow_run.id }} --log | grep issue | grep -o '[0-9]*$')
+            echo "$issue_number"
+            gh issue comment $issue_number --body "$log_comment"
