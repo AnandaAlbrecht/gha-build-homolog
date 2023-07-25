@@ -1,29 +1,20 @@
+name: Workflow end
+
 on:
     workflow_run:
       workflows: [Build homolog]
       types: [completed]
+
+env:
+  GH_TOKEN: ${{ github.token }}
+  GH_REPO: ${{ github.repository }}
   
 jobs:
-    on-success:
-      runs-on: ubuntu-latest
-      if: ${{ github.event.workflow_run.conclusion == 'success' }}
-      steps:
-        - name: Delete completed workflows
-          env:
-            GH_TOKEN: ${{ github.token }}
-          run: | 
-            gh api repos/${{ github.repository }}/actions/runs \
-            --paginate -q '.workflow_runs[] | select(.status == "completed") | "\(.id)"' | \
-            xargs -n1 -I % gh api repos/${{ github.repository }}/actions/runs/% -X DELETE
-
     on-failure:
       runs-on: ubuntu-latest
       if: ${{ github.event.workflow_run.conclusion == 'failure' }}
       steps:
         - name: Print logs
-          env:
-            GH_TOKEN: ${{ github.token }}
-            GH_REPO: ${{ github.repository }}
           run: |
             log_comment=$(gh run view ${{ github.event.workflow_run.id }} --log | grep -Po '(?=error: )[^x]*')            
             echo "$log_comment"
@@ -31,3 +22,14 @@ jobs:
             echo "$issue_number"
             gh issue comment $issue_number --body "## Log Error :x:
               $log_comment"
+
+    delete-workflows:
+      needs: [ on-failure ]
+      runs-on: ubuntu-latest
+      if: always()
+      steps:
+        - name: Delete completed workflows
+          run: | 
+            gh api repos/${{ github.repository }}/actions/runs \
+            --paginate -q '.workflow_runs[] | select(.status == "completed") | "\(.id)"' | \
+            xargs -n1 -I % gh api repos/${{ github.repository }}/actions/runs/% -X DELETE          
