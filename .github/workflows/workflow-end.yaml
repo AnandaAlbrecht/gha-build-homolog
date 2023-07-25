@@ -25,8 +25,9 @@ jobs:
             GH_TOKEN: ${{ github.token }}
             GH_REPO: ${{ github.repository }}
           run: |
-            log_comment=$(gh run view ${{ github.event.workflow_run.id }} --log | grep error)            
+            log_comment=$(gh run view ${{ github.event.workflow_run.id }} --log | grep -Po '(?=error: )[^x]*')            
             echo "$log_comment"
-            issue_number=$(gh run view ${{ github.event.workflow_run.id }} --log | grep issue | grep -o '[0-9]*$')
+            issue_number=$(gh run view ${{ github.event.workflow_run.id }} --log | grep -Po '(?<=issue-number: )[^x]*' | head -1)
             echo "$issue_number"
-            gh issue comment $issue_number --body "$log_comment"
+            gh issue comment $issue_number --body "## Log Error :x:
+              $log_comment"
