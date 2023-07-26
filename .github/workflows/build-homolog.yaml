@@ -74,6 +74,7 @@ jobs:
           git checkout -b homolog develop
           nova_lista=$lista_branches
           echo "DEBUG: Entrando no loop"
+          echo $nova_lista
           while read -r branch; do
             set +e
             echo "DEBUG: Verifica se $branch existe"
@@ -81,9 +82,20 @@ jobs:
             branch_exists=$?
             echo "DEBUG: Verificou se $branch $branch_exists"
             branch_merged=0
+            meajuda=$(git branch -a)
+            echo $meajuda
+            echo $branch
+            echo 'git log --pretty=format:"%h" develop'
+            teste=$(git log --pretty=format:"%h" develop)
+            echo 'git log --pretty=format:"%h" -1 remotes/origin/'$branch''
+            teste2=$(git log --pretty=format:"%h" -1 remotes/origin/$branch)
+            echo $teste
+            echo $teste2
             if [ $branch_exists -eq 0 ]; then
               git checkout $branch
               git log --pretty=format:"%h" develop | grep `git log --pretty=format:"%h" -1 $branch` &> /dev/null
+              teste=$(git log --pretty=format:"%h" develop | grep `git log --pretty=format:"%h" -1 $branch` &> /dev/null)
+              echo $teste
               branch_merged=$?
             fi
             if [ $branch_exists -eq 0 ] && [ $branch_merged -ne 0 ]; then
